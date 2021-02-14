@@ -36,7 +36,7 @@ export async function scrapeAllTickersWithCluster(page) {
 
             try {
                 _console.log('running task for: ', url)
-                await page.goto(url, { waitForSelector: 'tr.table-dark-row-cp', timeout: 45000 })
+                await page.goto(url, { waitForSelector: 'tr.table-dark-row-cp', timeout: 5000 })
                 // await page.goto(url, { waitUntil: 'load', timeout: 10000 })
 
                 // const presentsDropdownSelector = 'select[id="screenerPresetsSelect"]';
@@ -109,7 +109,7 @@ export async function scrapeAllTickersWithCluster(page) {
                 // console.log('symbols with data: ', symbolsData);
 
                 const someSymbols = [];
-                let currentObj = {}
+                let currentObj = { ticker: '', fundamentals: {} }
 
                 symbolsData.map((symbolDataCellText, index) => {
 
@@ -117,10 +117,16 @@ export async function scrapeAllTickersWithCluster(page) {
 
                     if (index % tableHeaderCells.length === tableHeaderCells.length - 1) {
                         someSymbols.push(currentObj);
-                        currentObj = {}
+                        currentObj = { ticker: '', fundamentals: {} }
                     }
 
-                    currentObj[tableHeaderCells[index % tableHeaderCells.length]] = symbolDataCellText
+                    if (tableHeaderCells[index % tableHeaderCells.length] === 'ticker' ||
+                        tableHeaderCells[index % tableHeaderCells.length] === 'Ticker') {
+                        // console.log('it\'s a ticker! ', tableHeaderCells[index % tableHeaderCells.length], ' ', symbolDataCellText)
+                        currentObj[tableHeaderCells[index % tableHeaderCells.length]] = symbolDataCellText
+                    }
+                    else
+                        currentObj.fundamentals[tableHeaderCells[index % tableHeaderCells.length]] = symbolDataCellText
                 })
 
                 // console.log('mapped symbols data: ', symbolsData.length);
@@ -130,9 +136,12 @@ export async function scrapeAllTickersWithCluster(page) {
             }
             catch (err) {
                 console.log('errr', err)
+                console.log('errored so requeuing: ', url)
+
+                cluster.queue(url);
+
                 await page.screenshot({ path: `img/${url.slice(url.length - 5)}.png` });
 
-                console.log('errored so requeuing: ', url)
             }
 
         });

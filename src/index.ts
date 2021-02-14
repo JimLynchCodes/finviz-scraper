@@ -26,10 +26,10 @@ export const main = async () => {
   console.log(`found at zero: ${JSON.stringify(scrapedTickerList[0]), null, 2}`)
 
   const scrapedTickerListNotOvervalued = scrapedTickerList.filter(stockObj => {
-    const peString = stockObj['p/e']
+    const peString = stockObj.fundamentals['p/e']
 
-    if (peString === '-')
-      return false
+    // if (peString === '-')
+    //   return false
 
     if (+peString > 40)
       return false
@@ -56,19 +56,36 @@ export const main = async () => {
   console.log('with growth calcs: ', tickerListWithGrowthCalculations.length)
   // console.log('ticker list with growth calcs: ', JSON.stringify(tickerListWithGrowthCalculations, null, 2))
 
-  const [rankedTickerList, rankingsMaxesAndMins] = calculateRankings(tickerListWithGrowthCalculations)
+  // Remove stocks that are not growing in all three areas...
+  const sortedRankedTickerListGoodOnes = tickerListWithGrowthCalculations.filter(tickerObj => {
+
+    let badOnes = 0
+
+    if (!tickerObj.growth_calculations.revenue ||
+      !tickerObj.growth_calculations.revenue['(t+1y)-max(0_to_t)'] ||
+      tickerObj.growth_calculations.revenue['(t+1y)-max(0_to_t)'] < 0)
+      badOnes++
+
+    if (!tickerObj.growth_calculations.gross_profit ||
+      !tickerObj.growth_calculations.gross_profit['(t+1y)-max(0_to_t)'] ||
+      tickerObj.growth_calculations.gross_profit['(t+1y)-max(0_to_t)'] < 0)
+      badOnes++
+
+    if (!tickerObj.growth_calculations.net_income ||
+      !tickerObj.growth_calculations.net_income['(t+1y)-max(0_to_t)'] ||
+      tickerObj.growth_calculations.net_income['(t+1y)-max(0_to_t)'] < 0)
+      badOnes++
+
+    if (badOnes < 3)
+      return tickerObj
+
+  })
+
+  const [rankedTickerList, rankingsMaxesAndMins] = calculateRankings(sortedRankedTickerListGoodOnes)
   console.log('with rankings: ', rankedTickerList.length)
 
   const sortedRankedTickerList = sortByRankings(rankedTickerList)
   console.log('sorted rankings: ', sortedRankedTickerList.length)
-
-  // Remove stocks that are shrinking in all three areas...
-  const sortedRankedTickerListGoodOnes = sortedRankedTickerList.filter(tickerObj => {
-    if (tickerObj.growth_calculations.revenue['t+1y/max_y_0_to_t'] > 0 &&
-      tickerObj.growth_calculations.gross_profit['t+1y/max_y_0_to_t'] > 0 &&
-      tickerObj.growth_calculations.net_income['t+1y/max_y_0_to_t'] > 0)
-      return tickerObj
-  })
 
   console.log('let\'s save it!')
   console.log(rankingsMaxesAndMins)
@@ -79,12 +96,12 @@ export const main = async () => {
 
   sortedRankedTickerList.forEach(stockObj => {
 
-    const profitMarginString = stockObj['profit_m']
+    const profitMarginString = stockObj.fundamentals['profit_m']
 
     if (profitMarginString !== '-') {
 
       // removes % character
-      const profitMarginStringNoPercentageSign = profitMarginString.substring(0, 'foo'.length - 1);
+      const profitMarginStringNoPercentageSign = profitMarginString.substring(0, profitMarginString.length - 1);
 
       if (profitMarginStringNoPercentageSign > 20)
         veryProfitableStocks.push(stockObj)
@@ -98,14 +115,18 @@ export const main = async () => {
     }
   })
 
-  const smallerListOfEverything = sortedRankedTickerList.splice(0, 600)
+  const maxStocksAllList = +process.env.MAX_STOCKS_PER_ALL_STOCKS_LIST;
+  const maxStocksProfitabilityList = +process.env.MAX_STOCKS_PER_PROFITABILITY_LIST;
+
+  console.log('MAX_STOCKS_PER_ALL_STOCKS_LIST: ', maxStocksAllList);
+  console.log('MAX_STOCKS_PER_PROFITABILITY_LIST: ', maxStocksProfitabilityList);
 
   await insert({
     date_scraped: new Date(),
-    all_stock_list: smallerListOfEverything,
-    very_profitables_stock_list: veryProfitableStocks,
-    barely_profitable_stock_list: barelyProfitableStocks,
-    barely_not_profitable_stock_list: barelyNotProfitableStocks,
+    all_stock_list: sortedRankedTickerList.splice(0, maxStocksAllList),
+    very_profitables_stock_list: veryProfitableStocks.splice(0, maxStocksProfitabilityList),
+    barely_profitable_stock_list: barelyProfitableStocks.splice(0, maxStocksProfitabilityList),
+    barely_not_profitable_stock_list: barelyNotProfitableStocks.splice(0, maxStocksProfitabilityList),
     maxes_and_mins: rankingsMaxesAndMins,
     no_income_tickers: tickersWithNoIncomeData
   })
