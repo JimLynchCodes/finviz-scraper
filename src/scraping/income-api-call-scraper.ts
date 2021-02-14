@@ -21,17 +21,13 @@ export async function getTickerListWithIncomeDataApiCalls(tickersWithQuoteData) 
         const quarterlyUrl = quarterlyIncomeStatementsBaseUrl + tickerObj['ticker']
 
         console.log('built a new quarterly url: ', quarterlyUrl)
-        return new Promise(resolve => setTimeout(resolve, 70 * index)).then(() => fetch(quarterlyUrl)
+        return new Promise(resolve => setTimeout(resolve, 75 * index)).then(() => fetch(quarterlyUrl)
             .then(response => response.json())
             .catch(err => {
                 console.log('uh oh, error calling for quarterly statements: ', err)
             }));
 
     })
-
-
-
-    // TODO - not scraping correct income statements for Ticker? 🤔
 
     console.log('calling for annual income Statements...')
     // const annualIncomeStatements = await Promise.all(annualIncomeStatementApiCalls)
@@ -64,6 +60,8 @@ export async function getTickerListWithIncomeDataApiCalls(tickersWithQuoteData) 
         const result = await apiCall;
         const niceResult = makeObjectKeysNice(result, tickersWithQuoteData[index].ticker)
 
+        // console.log('got some income data for ', tickersWithQuoteData[index].ticker, ' ', niceResult);
+        
         quarterlyIncomeHolder[tickersWithQuoteData[index].ticker] = niceResult;
 
         if (index % 100 === 0)
@@ -73,17 +71,12 @@ export async function getTickerListWithIncomeDataApiCalls(tickersWithQuoteData) 
 
     const tickersWithIncomeData = tickersWithQuoteData.map((tickerObj, currentIndex) => {
 
-        // console.log('2323 saving income data for: ', currentIndex, ' - ', tickerObj.ticker, annualIncomeHolder[tickerObj.ticker])
-
-        // if (!annualIncomeHolder[tickerObj.ticker].data || !quarterlyIncomeHolder[tickerObj.ticker].data)
-        if (!quarterlyIncomeHolder[tickerObj.ticker].data)
+       if (!quarterlyIncomeHolder[tickerObj.ticker].data)
             tickersWithNoIncomeData.push(tickerObj.ticker)
 
         return {
             ...clonedeep(tickerObj),
             income_statements: {
-                // ticker: tickers[currentIndex],
-                // quarterly: quarterlyIncomeStatements[currentIndex],
                 ticker: tickersWithQuoteData[currentIndex].ticker,
                 quarterly: quarterlyIncomeHolder[tickerObj.ticker],
                 // annual: annualIncomeHolder[tickerObj.ticker]
@@ -115,30 +108,3 @@ function makeObjectKeysNice(obj, ticker) {
         }, {})
     }
 }
-
-// function makeObjectKeysNice(arrayOfObjects) {
-
-//     return arrayOfObjects
-//         // .filter(obj => !obj.error)
-//         // .filter(obj => obj.data !== undefined)
-//         .map(obj => {
-
-//         //     // console.log('making keys nice: ', obj)
-
-//             if (!obj.currency || !obj.data)
-//                 return {
-//                     currency: null,
-//                     data: null
-//                 }
-
-//             return {
-//                 currency: obj.currency,
-//                 data: Object.entries(obj.data).reduce((finalObj, [key, val]) => {
-//                     const validKey = key.toLowerCase().replace(/[.]/g, '').replace(/[ ]/g, '_')
-//                     finalObj[validKey] = val
-//                     return finalObj
-//                 }, {})
-//             }
-
-//         })
-// }

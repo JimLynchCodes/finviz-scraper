@@ -50,12 +50,12 @@ export function calculateRankings(tickerDataWithGrowthCalcs) {
             return false
         }
 
-        if (+tickerObj.growth_calculations.revenue['t+1y/t_quarterly_PGpD'] === Infinity ||
-            +tickerObj.growth_calculations.revenue['t+1y/t_quarterly_PGpD'] === -Infinity ||
-            +tickerObj.growth_calculations.gross_profit['t+1y/t_quarterly_PGpD'] === Infinity ||
-            +tickerObj.growth_calculations.gross_profit['t+1y/t_quarterly_PGpD'] === -Infinity ||
-            +tickerObj.growth_calculations.net_income['t+1y/t_quarterly_PGpD'] === Infinity ||
-            +tickerObj.growth_calculations.net_income['t+1y/t_quarterly_PGpD'] === -Infinity) {
+        if (+tickerObj.growth_calculations.revenue['t+1y_quarterly_PGpD'] === Infinity ||
+            +tickerObj.growth_calculations.revenue['t+1y_quarterly_PGpD'] === -Infinity ||
+            +tickerObj.growth_calculations.gross_profit['t+1y_quarterly_PGpD'] === Infinity ||
+            +tickerObj.growth_calculations.gross_profit['t+1y_quarterly_PGpD'] === -Infinity ||
+            +tickerObj.growth_calculations.net_income['t+1y_quarterly_PGpD'] === Infinity ||
+            +tickerObj.growth_calculations.net_income['t+1y_quarterly_PGpD'] === -Infinity) {
             console.log('filtering out 2 (infinite PGpD): ', tickerObj.ticker)
             // console.log('filtering out 2 (infinite PGpD): ', tickerObj)
             return false
@@ -65,20 +65,20 @@ export function calculateRankings(tickerDataWithGrowthCalcs) {
         //     return false
         // }
 
-        if (isNaN(+tickerObj.growth_calculations.revenue['t+1y/t_quarterly_PGpD']) ||
-            isNaN(+tickerObj.growth_calculations.gross_profit['t+1y/t_quarterly_PGpD']) ||
-            isNaN(+tickerObj.growth_calculations.net_income['t+1y/t_quarterly_PGpD'])) {
+        if (isNaN(+tickerObj.growth_calculations.revenue['t+1y_quarterly_PGpD']) ||
+            isNaN(+tickerObj.growth_calculations.gross_profit['t+1y_quarterly_PGpD']) ||
+            isNaN(+tickerObj.growth_calculations.net_income['t+1y_quarterly_PGpD'])) {
             // console.log('filtering out 3 (NaN PGpD): ', tickerObj)
             console.log('filtering out 3 (NaN PGpD): ', tickerObj.ticker)
             return false
         }
 
 
-        // +tickerObj.growth_calculations.gross_profit['t+1y/t_quarterly_PGpD'] === 0 &&
-        // +tickerObj.growth_calculations.net_income['t+1y/t_quarterly_PGpD'] === 0)
+        // +tickerObj.growth_calculations.gross_profit['t+1y_quarterly_PGpD'] === 0 &&
+        // +tickerObj.growth_calculations.net_income['t+1y_quarterly_PGpD'] === 0)
         // ) {
         //     // console.log('symbol ', tickerObj.symbol, ' is ok!')
-            return true
+        return true
         // }
         // else {
         //     // console.log('filtering out symbol: ', tickerObj.symbol)
@@ -93,9 +93,9 @@ export function calculateRankings(tickerDataWithGrowthCalcs) {
     filterdDataWithGrowthCalcs
         .forEach(stockObj => {
 
-            let revenue_quarterly_1y_PGdP = stockObj.growth_calculations.revenue['t+1y/t_quarterly_PGpD']
-            let gross_profit_quarterly_1y_PGdP = stockObj.growth_calculations.gross_profit['t+1y/t_quarterly_PGpD']
-            let net_income_quarterly_1y_PGdP = stockObj.growth_calculations.net_income['t+1y/t_quarterly_PGpD']
+            let revenue_quarterly_1y_PGdP = stockObj.growth_calculations.revenue['t+1y_quarterly_PGpD']
+            let gross_profit_quarterly_1y_PGdP = stockObj.growth_calculations.gross_profit['t+1y_quarterly_PGpD']
+            let net_income_quarterly_1y_PGdP = stockObj.growth_calculations.net_income['t+1y_quarterly_PGpD']
 
             // console.log('filling rankings for ', stockObj.symbol, ' ', revenue_quarterly_1y_PGdP, ', ', gross_profit_quarterly_1y_PGdP, ', ', net_income_quarterly_1y_PGdP, ', ')
 
@@ -186,9 +186,9 @@ export function calculateRankings(tickerDataWithGrowthCalcs) {
     const rankedStatsArray = filterdDataWithGrowthCalcs
         .map(stockObj => {
 
-            const revenue_quarterly_1y_PGdP = stockObj.growth_calculations.revenue['t+1y/t_quarterly_PGpD']
-            const gross_profit_quarterly_1y_PGdP = stockObj.growth_calculations.gross_profit['t+1y/t_quarterly_PGpD']
-            const net_income_quarterly_1y_PGdP = stockObj.growth_calculations.net_income['t+1y/t_quarterly_PGpD']
+            const revenue_quarterly_1y_PGdP = stockObj.growth_calculations.revenue['t+1y_quarterly_PGpD']
+            const gross_profit_quarterly_1y_PGdP = stockObj.growth_calculations.gross_profit['t+1y_quarterly_PGpD']
+            const net_income_quarterly_1y_PGdP = stockObj.growth_calculations.net_income['t+1y_quarterly_PGpD']
 
             let revenueRanking = 0
             let grossProfitRanking = 0
@@ -263,9 +263,9 @@ export function calculateRankings(tickerDataWithGrowthCalcs) {
             // console.table(rankingsMaxMinsHolder)
 
             // console.table({
-            //     raw_revenue: stockObj.growth_calculations.revenue['t+1y/t_quarterly_PGpD'],
-            //     raw_gross_profit: stockObj.growth_calculations.gross_profit['t+1y/t_quarterly_PGpD'],
-            //     raw_net_income: stockObj.growth_calculations.net_income['t+1y/t_quarterly_PGpD'],
+            //     raw_revenue: stockObj.growth_calculations.revenue['t+1y_quarterly_PGpD'],
+            //     raw_gross_profit: stockObj.growth_calculations.gross_profit['t+1y_quarterly_PGpD'],
+            //     raw_net_income: stockObj.growth_calculations.net_income['t+1y_quarterly_PGpD'],
             // })
             // console.table({
             //     revenue: +revenueRanking.toFixed(2),

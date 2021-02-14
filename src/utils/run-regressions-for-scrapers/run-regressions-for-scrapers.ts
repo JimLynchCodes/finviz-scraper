@@ -16,7 +16,7 @@ export function runQuarterlyRegressionsForTicker(latestFirstDataPoints) {
 
     if (latestFirstDataPoints) {
 
-        chronologicalDataPoints = latestFirstDataPoints
+        chronologicalDataPoints = clonedeep(latestFirstDataPoints)
             .reverse().map((revenueDataPoint, index) => [index, +(revenueDataPoint.replace(/,/g, ''))])
 
         // shift points up to y=0 if necessary
@@ -120,8 +120,8 @@ export function runQuarterlyRegressionsForTicker(latestFirstDataPoints) {
         regression_best_fit_line_type,
         regression_best_fit_line_equation,
         next_year_quarterly_revenue_prediction,
-        'max_y_0_to_t': maxChronologicalYValue,
-        't+1y/max_y_0_to_t': tPlusDifference
+        'max(0_to_t)': maxChronologicalYValue,
+        '(t+1y)-max(0_to_t)': tPlusDifference
     }
 }
 

@@ -16,6 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/node": "^14.14.27",
     "@types/regression": "^2.0.0",
     "dotenv": "^8.2.0",
     "lodash.clonedeep": "^4.5.0",

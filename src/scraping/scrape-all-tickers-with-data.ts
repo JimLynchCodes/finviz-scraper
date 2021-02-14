@@ -2,7 +2,10 @@ const { Cluster } = require('puppeteer-cluster');
 
 export async function scrapeAllTickersWithCluster(page) {
 
-    await page.goto(`https://elite.finviz.com/screener.ashx?`, { waitUntil: 'load', timeout: 20000 })
+    await page.goto(`https://elite.finviz.com/screener.ashx?`, { waitUntil: 'networkidle0', timeout: 50000 })
+
+    await page.keyboard.press('Escape');
+
     // await page.goto(`https://finviz.com/screener.ashx?v=152&c=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,57,58,59,60,61,62,63,64,65,66,67,68,69,70`,
     //     { waitUntil: 'load' })
 
@@ -36,7 +39,14 @@ export async function scrapeAllTickersWithCluster(page) {
 
             try {
                 _console.log('running task for: ', url)
-                await page.goto(url, { waitForSelector: 'tr.table-dark-row-cp', timeout: 45000 })
+                await page.goto(url, {
+
+                    // networkIdleTimeout: 5000,
+                    waitUntil: 'networkidle2',
+                    timeout: 17000
+                })
+
+
                 // await page.goto(url, { waitUntil: 'load', timeout: 10000 })
 
                 // const presentsDropdownSelector = 'select[id="screenerPresetsSelect"]';
@@ -109,7 +119,7 @@ export async function scrapeAllTickersWithCluster(page) {
                 // console.log('symbols with data: ', symbolsData);
 
                 const someSymbols = [];
-                let currentObj = {}
+                let currentObj = { ticker: '', fundamentals: {} }
 
                 symbolsData.map((symbolDataCellText, index) => {
 
@@ -117,10 +127,16 @@ export async function scrapeAllTickersWithCluster(page) {
 
                     if (index % tableHeaderCells.length === tableHeaderCells.length - 1) {
                         someSymbols.push(currentObj);
-                        currentObj = {}
+                        currentObj = { ticker: '', fundamentals: {} }
                     }
 
-                    currentObj[tableHeaderCells[index % tableHeaderCells.length]] = symbolDataCellText
+                    if (tableHeaderCells[index % tableHeaderCells.length] === 'ticker' ||
+                        tableHeaderCells[index % tableHeaderCells.length] === 'Ticker') {
+                        // console.log('it\'s a ticker! ', tableHeaderCells[index % tableHeaderCells.length], ' ', symbolDataCellText)
+                        currentObj[tableHeaderCells[index % tableHeaderCells.length]] = symbolDataCellText
+                    }
+                    else
+                        currentObj.fundamentals[tableHeaderCells[index % tableHeaderCells.length]] = symbolDataCellText
                 })
 
                 // console.log('mapped symbols data: ', symbolsData.length);
@@ -130,9 +146,12 @@ export async function scrapeAllTickersWithCluster(page) {
             }
             catch (err) {
                 console.log('errr', err)
+                console.log('errored so requeuing: ', url)
                 await page.screenshot({ path: `img/${url.slice(url.length - 5)}.png` });
 
-                console.log('errored so requeuing: ', url)
+                cluster.queue(url);
+
+
             }
 
         });
